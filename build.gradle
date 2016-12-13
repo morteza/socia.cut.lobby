@@ -1,0 +1,21 @@
+plugins {
+  id 'java'
+  id 'application'
+  id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+
+repositories {
+  jcenter()
+}
+
+version = '1.0.0'
+sourceCompatibility = '1.8'
+
+dependencies {
+  compile "io.vertx:vertx-core:3.3.3"
+  compile "io.vertx:vertx-web:3.3.3"
+  compile "io.vertx:vertx-jdbc-client:3.3.3"
+  compile "io.vertx:vertx-unit:3.3.3"
+}
+
+mainClassName = 'social.cut.lobby.ServerStarter'
