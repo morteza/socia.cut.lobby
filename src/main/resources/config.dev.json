@@ -1,0 +1,10 @@
+{
+  "src-package": "social.cut.lobby",
+  "port" : 8080,
+  "templates":["hbs"],
+  "mongo": {
+    "host": "localhost",
+    "port": 27017,
+    "db_name": "cut"
+  }
+}

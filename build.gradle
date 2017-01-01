@@ -1,21 +1,85 @@
 plugins {
   id 'java'
+  id 'eclipse'
   id 'application'
+  id 'idea'
+  id 'maven'
   id 'com.github.johnrengelman.shadow' version '1.2.4'
 }
 
-repositories {
-  jcenter()
+group = 'social.cut.lobby'
+version = '0.0.1-SNAPSHOT'
+
+description = """Lobby service for cut.social"""
+
+mainClassName = 'io.vertx.core.Launcher'
+def mainVerticle = 'social.cut.lobby.LobbyServer'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+  options.encoding = 'UTF-8'
 }
 
-version = '1.0.0'
-sourceCompatibility = '1.8'
+repositories {
+     mavenLocal()
+     maven { url "http://repo.maven.apache.org/maven2" }
+     jcenter()
+}
 
 dependencies {
-  compile "io.vertx:vertx-core:3.3.3"
-  compile "io.vertx:vertx-web:3.3.3"
-  compile "io.vertx:vertx-jdbc-client:3.3.3"
-  compile "io.vertx:vertx-unit:3.3.3"
+  // compile fileTree(dir: 'lib', include: ['*.jar'])
+  
+  compile "io.vertx:vertx-core:${vertxVersion}"
+  compile "io.vertx:vertx-auth-common:${vertxVersion}"
+  compile "io.vertx:vertx-mongo-client:${vertxVersion}"
+  compile "io.vertx:vertx-web:${vertxVersion}"
+  compile "io.vertx:vertx-web-templ-handlebars:${vertxVersion}"
+
+  compile group: 'com.github.aesteve', name: 'nubes', version:'2.0-SNAPSHOT'
+
+  compile group: 'com.github.jknack', name: 'handlebars', version:'4.0.6'
+
+  testCompile "io.vertx:vertx-unit:${vertxVersion}"
+
 }
 
-mainClassName = 'social.cut.lobby.ServerStarter'
+shadowJar  {
+  classifier = ''
+  manifest {
+    attributes 'Main-Class': 'io.vertx.core.Starter'
+    attributes 'Main-Verticle': 'java:social.cut.lobby.ServerStarter'
+  }
+  mergeServiceFiles {
+    include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+  }
+  dependencies {
+    exclude(dependency('junit:junit'))
+  }
+}
+
+run {
+  args = [
+    'run', mainVerticle,
+    '--redeploy=src/**/*.java',
+    "--launcher-class=$mainClassName",
+    "--on-redeploy=./gradlew classes",
+    "-conf","src/main/resources/config.dev.json"]
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '3.2.1'
+}
+
+task start(dependsOn: shadowJar) {
+  doLast {
+    javaexec {
+      main="-jar"
+      args=[
+        shadowJar.archivePath,
+        "-conf",
+        "src/main/resources/config.dev.json"
+      ]
+    }
+  }
+}
